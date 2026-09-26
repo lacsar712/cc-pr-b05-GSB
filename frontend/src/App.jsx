@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import HourlyStats from './HourlyStats.jsx'
 
 export default function App() {
   const [username, setUsername] = useState('printer')
@@ -10,6 +11,7 @@ export default function App() {
   const [cyan, setCyan] = useState('0.08')
   const [magenta, setMagenta] = useState('0.02')
   const [error, setError] = useState('')
+  const [page, setPage] = useState('jobs')
 
   async function api(path, options = {}) {
     const res = await fetch(path, {
@@ -84,7 +86,15 @@ export default function App() {
   return (
     <main>
       <h1>印刷套准复核台</h1>
-      <button onClick={leave}>退出</button>
+      <p>
+        <button onClick={() => setPage('jobs')} disabled={page === 'jobs'}>复核台</button>
+        <button onClick={() => setPage('hourly')} disabled={page === 'hourly'}>时段失败率</button>
+        <button onClick={leave}>退出</button>
+      </p>
+      {page === 'hourly' ? (
+        <HourlyStats api={api} />
+      ) : (
+        <>
       {role === 'writer' && (
         <p>
           <input value={sheet} onChange={(e) => setSheet(e.target.value)} />
@@ -110,6 +120,8 @@ export default function App() {
           ))}
         </tbody>
       </table>
+        </>
+      )}
     </main>
   )
 }
