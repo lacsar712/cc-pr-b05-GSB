@@ -110,6 +110,20 @@ def list_jobs(_user: dict = Depends(current_user)):
         ).fetchall()
 
 
+@app.get("/api/stats/hourly")
+def hourly_stats(_user: dict = Depends(current_user)):
+    with connect() as conn:
+        return conn.execute(
+            """SELECT to_char(date_trunc('hour', created_at AT TIME ZONE 'Asia/Shanghai'), 'YYYY-MM-DD HH24:00') AS hour,
+                      COUNT(*) AS total,
+                      COUNT(*) FILTER (WHERE verdict = '套不准') AS failed,
+                      ROUND(COUNT(*) FILTER (WHERE verdict = '套不准') * 100.0 / COUNT(*), 1)::float AS fail_rate
+               FROM jobs
+               GROUP BY 1
+               ORDER BY 1 DESC"""
+        ).fetchall()
+
+
 @app.post("/api/jobs", status_code=202)
 def enqueue(body: JobIn, user: dict = Depends(require_writer)):
     with connect() as conn:
